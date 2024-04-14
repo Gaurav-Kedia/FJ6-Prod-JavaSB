@@ -39,7 +39,7 @@ public class FileWriterClass {
 	
 	public void make_java_file() {
 		try {
-            File newTextFile = new File("/home/ubuntu/codebase/file/code_" + timestamp + ".java");
+            File newTextFile = new File("/home/ubuntu/Java-SB-1/Codebase/File/code_" + timestamp + ".java");
             FileWriter fw = new FileWriter(newTextFile);
             //code = code.substring(1, code.length()-1);
             fw.write(code);
@@ -53,7 +53,7 @@ public class FileWriterClass {
 	
 	public void make_input_file() {
 		try {
-            File newTextFile = new File("/home/ubuntu/codebase/file/input_" + timestamp + ".txt");
+            File newTextFile = new File("/home/ubuntu/Java-SB-1/Codebase/File/input_" + timestamp + ".txt");
             FileWriter fw = new FileWriter(newTextFile);
             //input = input.substring(1, input.length()-1);
             fw.write(input);
@@ -66,7 +66,7 @@ public class FileWriterClass {
 	}
 	
 	public void compiler() throws IOException {
-	File location = new File("/home/ubuntu/codebase/file/");
+	File location = new File("/home/ubuntu/Java-SB-1/Codebase/File/");
 	command = "javac code_" + timestamp + ".java";
 		
 	//output.append("Running in: " + location);
@@ -119,7 +119,7 @@ public class FileWriterClass {
 	}
 	
 	public void runtime() throws IOException {
-		File location = new File("/home/ubuntu/codebase/file/");
+		File location = new File("/home/ubuntu/Java-SB-1/Codebase/File/");
 		command2 = "java code_" + timestamp + ".java" + " < input_" + timestamp + ".txt";
 		
 		//output.append("Running in: " + location);
