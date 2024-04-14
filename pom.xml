@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.foreverjava</groupId>
-	<artifactId>server_side_sts1</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>server_side_sts1</name>
-	<description>api project for server side sts1</description>
+	<artifactId>FJ6-Prod-JavaSB</artifactId>
+	<version>0.0.1</version>
+	<name>FJ6-Prod-JavaSB</name>
+	<description>Api project for server side sts -> FJ6-Prod-JavaSB</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
