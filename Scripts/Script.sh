@@ -29,4 +29,6 @@ cd target
 echo "Inside Target folder"
 ls -lh
 
+nohup java -jar FJ6-Prod-JavaSB-0.0.1.jar &
+
 echo "********** End of Deploy Script .sh file 1 **********"
