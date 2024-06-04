@@ -1,28 +1,26 @@
+
 /**
- * 
+ *
  */
-package com.foreverjava.server_side_sts1;
+package com.foreverjava.Controller;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
-import org.apache.tomcat.util.json.JSONParser;
+import com.foreverjava.Reader.Creds;
+import com.foreverjava.Reader.FJCryptoUtil;
+import com.foreverjava.Reader.XmlReaderService;
+import com.foreverjava.Writer.FileWriterClass;
 import org.json.JSONObject;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.scheduling.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * @author GAURAV
@@ -31,29 +29,33 @@ import java.util.concurrent.ThreadFactory;
 @CrossOrigin
 @RestController
 public class Server_controller {
+
+	@Autowired
+	private XmlReaderService xmlReaderService;
+
+	@Autowired
+	private FJCryptoUtil encryptionUtils;
+
+	@GetMapping("/read-xml")
+	public Creds readXml(@RequestParam String filePath){
+		//Get url : http://localhost:9010/read-xml?filePath=D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/Creds.xml
+		return xmlReaderService.readCredsFromXml(filePath);
+	}
+
 	@GetMapping("/Hello")
 	public String welcome() {
 		System.out.println("..................getting a request....");
-	    java.util.Date date = new java.util.Date();
+		java.util.Date date = new java.util.Date();
 		return new String(date + " APi is working as expected - Gaurav");
 	}
-	
+
 	@GetMapping("/Error")
 	public String error() {
 		return "error 1";
 	}
-	
-//	@PostMapping("/jc")
-//	public StringBuilder save(@RequestBody String code) throws IOException {
-//		System.out.println(code);
-//		FileWriterClass f = new FileWriterClass(code);
-//		return f.write();
-//	}
-	
-	//@PostMapping("/java")
-	//@Async
+
 	@RequestMapping("/java")
-	public StringBuilder runnable(@RequestBody String s) throws IOException {
+	public StringBuilder CodeExecutor(@RequestBody String s) throws IOException {
 		JSONObject j = new JSONObject(s);
 		System.out.println(j.getString("code") + " : " +j.getString("input"));
 		Executor executor = Executors.newFixedThreadPool(10);
@@ -63,22 +65,14 @@ public class Server_controller {
 			Date dateOne = c1.getTime();
 			long time = dateOne.getTime();
 			String timestamp = String.valueOf(time);
-			
+
 			result = ((ExecutorService) executor).submit(() -> {
-			    //return "Hell_" + timestamp;
 				FileWriterClass f = new FileWriterClass(j.getString("code"),j.getString("input"), timestamp);
 				return f.write();
 			}).get();
 		} catch (InterruptedException | ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//FileWriterClass f = new FileWriterClass(j.getString("code"),j.getString("input"));
-		//return f.write();
 		return new StringBuilder(result);
 	}
 }
-
-
-
-
