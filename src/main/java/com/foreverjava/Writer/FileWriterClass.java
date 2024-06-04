@@ -1,4 +1,4 @@
-package com.foreverjava.server_side_sts1;
+package com.foreverjava.Writer;
 
 import java.io.BufferedReader;
 import java.io.File;
