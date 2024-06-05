@@ -9,6 +9,7 @@ import java.io.IOException;
 import com.foreverjava.Reader.Creds;
 import com.foreverjava.Reader.FJCryptoUtil;
 import com.foreverjava.Reader.XmlReaderService;
+import com.foreverjava.Writer.FileConfig;
 import com.foreverjava.Writer.FileWriterClass;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,13 @@ public class Server_controller {
 
 	@Autowired
 	private FJCryptoUtil encryptionUtils;
+
+	private final FileConfig fileConfig;
+
+	@Autowired
+	public Server_controller(FileConfig fileConfig) {
+		this.fileConfig = fileConfig;
+	}
 
 	@GetMapping("/read-xml")
 	public Creds readXml(@RequestParam String filePath){
@@ -67,7 +75,7 @@ public class Server_controller {
 			String timestamp = String.valueOf(time);
 
 			result = ((ExecutorService) executor).submit(() -> {
-				FileWriterClass f = new FileWriterClass(j.getString("code"),j.getString("input"), timestamp);
+				FileWriterClass f = new FileWriterClass(j.getString("code"),j.getString("input"), timestamp, fileConfig);
 				return f.write();
 			}).get();
 		} catch (InterruptedException | ExecutionException e) {
