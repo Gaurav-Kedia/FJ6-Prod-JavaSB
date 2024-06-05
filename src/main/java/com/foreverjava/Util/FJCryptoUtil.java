@@ -1,4 +1,4 @@
-package com.foreverjava.Reader;
+package com.foreverjava.Util;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;

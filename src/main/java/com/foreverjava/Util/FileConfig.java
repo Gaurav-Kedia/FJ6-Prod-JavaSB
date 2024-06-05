@@ -1,4 +1,4 @@
-package com.foreverjava.Writer;
+package com.foreverjava.Util;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

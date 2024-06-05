@@ -1,4 +1,4 @@
-package com.foreverjava.Reader;
+package com.foreverjava.Util;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

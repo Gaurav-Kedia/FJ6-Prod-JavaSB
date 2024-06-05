@@ -1,5 +1,7 @@
 package com.foreverjava.Writer;
 
+import com.foreverjava.Util.FileConfig;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
