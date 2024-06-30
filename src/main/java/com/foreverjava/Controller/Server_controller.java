@@ -6,6 +6,7 @@ package com.foreverjava.Controller;
 
 import java.io.IOException;
 
+import com.foreverjava.Reader.JavaReaderService;
 import com.foreverjava.Util.Creds;
 import com.foreverjava.Util.FJCryptoUtil;
 import com.foreverjava.Reader.XmlReaderService;
@@ -37,6 +38,9 @@ public class Server_controller {
 	@Autowired
 	private FJCryptoUtil encryptionUtils;
 
+	@Autowired
+	private JavaReaderService javaReaderService;
+
 	private final FileConfigUtil fileConfig;
 
 	@Autowired
@@ -46,19 +50,18 @@ public class Server_controller {
 
 	@GetMapping("/read-xml")
 	public Creds readXml(@RequestParam String filePath){
-		//Get url : http://localhost:9010/read-xml?filePath=D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/Creds.xml
 		return xmlReaderService.readCredsFromXml(filePath);
 	}
 
 	@GetMapping("/list-java-files")
 	public List<String> listJavaFiles() {
-		return FileConfigUtil.listJavaFiles("D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/File");
+		return javaReaderService.listJavaFiles();
 	}
 
 	@GetMapping("/get-file-contents")
 	public String getFileContents(@RequestParam String fileName) {
 		try {
-			return FileConfigUtil.readFileContents("D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/File", fileName);
+			return javaReaderService.readFileContents(fileName);
 		} catch (IOException e) {
 			return "Error: " + e.getMessage();
 		}

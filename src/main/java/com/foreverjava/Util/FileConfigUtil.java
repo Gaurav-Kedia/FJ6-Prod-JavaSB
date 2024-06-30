@@ -19,28 +19,4 @@ public class FileConfigUtil {
     public String getFileLocation() {
         return FileLocation;
     }
-
-    public static List<String> listJavaFiles(String directoryPath) {
-        List<String> javaFiles = new ArrayList<>();
-        File directory = new File(directoryPath);
-
-        if (directory.exists() && directory.isDirectory()) {
-            File[] files = directory.listFiles((dir, name) -> name.endsWith(".java"));
-            if (files != null) {
-                for (File file : files) {
-                    javaFiles.add(file.getName());
-                }
-            }
-        }
-        return javaFiles;
-    }
-
-    public static String readFileContents(String directoryPath, String fileName) throws IOException {
-        File file = new File(directoryPath, fileName);
-        if (file.exists() && file.isFile()) {
-            return new String(Files.readAllBytes(Paths.get(file.getPath())));
-        } else {
-            throw new IOException("File not found: " + fileName);
-        }
-    }
 }
