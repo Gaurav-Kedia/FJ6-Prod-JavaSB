@@ -18,7 +18,7 @@ import com.foreverjava.Util.HttpUtils;
 @RequestMapping("/api")
 public class Gpt_controller {
 
-    private String openaiApiKey="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";
+    //private String openaiApiKey="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";
     String model = "gpt-3.5-turbo-instruct";
 
     private final RestTemplate restTemplate = new RestTemplate();
