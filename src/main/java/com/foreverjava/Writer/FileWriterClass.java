@@ -1,6 +1,6 @@
 package com.foreverjava.Writer;
 
-import com.foreverjava.Util.FileConfig;
+import com.foreverjava.Util.FileConfigUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,7 +19,7 @@ public class FileWriterClass {
 	java.util.Date date = new java.util.Date();
 	private String FileLocation;
 
-	public FileWriterClass(String val, String in, String ts, FileConfig fc) {
+	public FileWriterClass(String val, String in, String ts, FileConfigUtil fc) {
 		this.code=val;
 		this.input=in;
 		this.timestamp=ts;

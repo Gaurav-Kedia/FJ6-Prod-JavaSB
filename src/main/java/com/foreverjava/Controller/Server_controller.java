@@ -9,7 +9,7 @@ import java.io.IOException;
 import com.foreverjava.Util.Creds;
 import com.foreverjava.Util.FJCryptoUtil;
 import com.foreverjava.Reader.XmlReaderService;
-import com.foreverjava.Util.FileConfig;
+import com.foreverjava.Util.FileConfigUtil;
 import com.foreverjava.Writer.FileWriterClass;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -36,10 +37,10 @@ public class Server_controller {
 	@Autowired
 	private FJCryptoUtil encryptionUtils;
 
-	private final FileConfig fileConfig;
+	private final FileConfigUtil fileConfig;
 
 	@Autowired
-	public Server_controller(FileConfig fileConfig) {
+	public Server_controller(FileConfigUtil fileConfig) {
 		this.fileConfig = fileConfig;
 	}
 
@@ -47,6 +48,20 @@ public class Server_controller {
 	public Creds readXml(@RequestParam String filePath){
 		//Get url : http://localhost:9010/read-xml?filePath=D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/Creds.xml
 		return xmlReaderService.readCredsFromXml(filePath);
+	}
+
+	@GetMapping("/list-java-files")
+	public List<String> listJavaFiles() {
+		return FileConfigUtil.listJavaFiles("D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/File");
+	}
+
+	@GetMapping("/get-file-contents")
+	public String getFileContents(@RequestParam String fileName) {
+		try {
+			return FileConfigUtil.readFileContents("D:/Users/GAURAV/eclipse-workspace/FJ6-LocalSetup/Codebase/File", fileName);
+		} catch (IOException e) {
+			return "Error: " + e.getMessage();
+		}
 	}
 
 	@GetMapping("/Hello")
