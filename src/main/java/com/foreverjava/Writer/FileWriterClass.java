@@ -4,11 +4,7 @@ import com.foreverjava.Util.FileConfigUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.Date;
 
 public class FileWriterClass {
@@ -33,8 +29,8 @@ public class FileWriterClass {
 	public StringBuilder write() throws IOException {
 		createFile("code_", ".java", code);
 		createFile("input_", ".txt", input);
-		compileJavaFile();
-		executeJavaFile();
+		compileTimeJavaFile();
+		runtimeJavaFile();
 		return output;
 	}
 
@@ -48,12 +44,12 @@ public class FileWriterClass {
 		}
 	}
 
-	private void compileJavaFile() throws IOException {
+	private void compileTimeJavaFile() throws IOException {
 		String command = "javac code_" + timestamp + ".java";
 		executeCommand(command, "Compilation");
 	}
 
-	private void executeJavaFile() throws IOException {
+	private void runtimeJavaFile() throws IOException {
 		String command = "java code_" + timestamp + ".java < input_" + timestamp + ".txt";
 		executeCommand(command, "Execution");
 	}
