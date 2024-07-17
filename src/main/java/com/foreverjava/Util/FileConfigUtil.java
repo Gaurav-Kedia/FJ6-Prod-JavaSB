@@ -16,7 +16,14 @@ public class FileConfigUtil {
     @Value("${File.Location.Local}")
     String FileLocation;
 
+    @Value("${Creds.Location.Local}")
+    String CredLocation;
+
     public String getFileLocation() {
         return FileLocation;
+    }
+
+    public String getCredLocation() {
+        return CredLocation;
     }
 }

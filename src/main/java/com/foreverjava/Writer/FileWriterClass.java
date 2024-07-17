@@ -1,104 +1,138 @@
 package com.foreverjava.Writer;
 
 import com.foreverjava.Util.FileConfigUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.util.Date;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+
 
 public class FileWriterClass {
+	
+	private static boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
+	private String code, input, timestamp, command, command2;
+	private Process process, process2;
+	StringBuilder output = new StringBuilder("");
+	java.util.Date date = new java.util.Date();
+	private String FileLocation;
+	private String Credlocation;
 
-	private static final Logger logger = LoggerFactory.getLogger(FileWriterClass.class);
-	private static final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
-
-	private final String code;
-	private final String input;
-	private final String timestamp;
-	private final String fileLocation;
-	private StringBuilder output;
-
-	public FileWriterClass(String code, String input, String timestamp, FileConfigUtil fileConfig) {
-		this.code = code;
-		this.input = input;
-		this.timestamp = timestamp;
-		this.fileLocation = fileConfig.getFileLocation();
-		this.output = new StringBuilder();
+	public FileWriterClass(String val, String in, String ts, FileConfigUtil fc) {
+		this.code=val;
+		this.input=in;
+		this.timestamp=ts;
+		FileLocation = fc.getFileLocation();
+		Credlocation = fc.getCredLocation();
 	}
-
+	
 	public StringBuilder write() throws IOException {
-		createFile("code_", ".java", code);
-		createFile("input_", ".txt", input);
-		compileTimeJavaFile();
-		runtimeJavaFile();
-		return output;
+		System.out.println("File location : " + FileLocation);
+		System.out.println("Cred location : " + Credlocation);
+		make_java_file();
+		make_input_file();
+		compiler();
+		runtime();
+        return output;
 	}
-
-	private void createFile(String prefix, String suffix, String content) {
-		String fileName = fileLocation + prefix + timestamp + suffix;
-		try (FileWriter fileWriter = new FileWriter(new File(fileName))) {
-			fileWriter.write(content);
-			logInfo("Successfully created file: " + fileName);
-		} catch (IOException e) {
-			logError("Error creating file: " + fileName, e);
-		}
+	
+	public void make_java_file() {
+		try {
+            File newTextFile = new File(FileLocation + "code_" + timestamp + ".java");
+            FileWriter fw = new FileWriter(newTextFile);
+            fw.write(code);
+            fw.close();
+	    	System.out.println(date + " :successfully create code file");
+        } catch (IOException iox) {
+            iox.printStackTrace();
+        }
 	}
-
-	private void compileTimeJavaFile() throws IOException {
-		String command = "javac code_" + timestamp + ".java";
-		executeCommand(command, "Compilation");
+	
+	public void make_input_file() {
+		try {
+            File newTextFile = new File(FileLocation + "input_" + timestamp + ".txt");
+            FileWriter fw = new FileWriter(newTextFile);
+            fw.write(input);
+            fw.close();
+	    	System.out.println(date + " :successfully create input file");
+        } catch (IOException iox) {
+            iox.printStackTrace();
+        }
 	}
+	
+	public void compiler() throws IOException {
+	File location = new File(FileLocation);
+	command = "javac code_" + timestamp + ".java";
+	ProcessBuilder builder = new ProcessBuilder();
+        builder.directory(location);
 
-	private void runtimeJavaFile() throws IOException {
-		String command = "java code_" + timestamp + ".java < input_" + timestamp + ".txt";
-		executeCommand(command, "Execution");
-	}
-
-	private void executeCommand(String command, String phase) throws IOException {
-		File location = new File(fileLocation);
-		ProcessBuilder builder = new ProcessBuilder();
-		builder.directory(location);
-
-		if (isWindows) {
+        if(isWindows) {
 			builder.command("cmd.exe", "/c", command);
-		} else {
+        }else {
 			builder.command("sh", "-c", command);
+        }
+	process = null;
+	try
+	{process = builder.start();}
+	catch (IOException e)
+	{e.printStackTrace();}
+		
+	final BufferedReader is = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        String line;
+        while ((line = is.readLine()) != null) {
+        	System.out.println("c : " + line);
+        	output.append(line);
+			output.append("\n");
 		}
-
-		Process process = builder.start();
-		logProcessOutput(process, phase);
+        final BufferedReader is2 = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+        boolean f = false;
+        while ((line = is2.readLine()) != null) {
+        	f = true;
+        	System.out.println(date + line);
+        	output.append(line);
+			output.append("\n");
+        }
+        
+        if(!f) {
+        	output.append("Successfully Compiled");
+			output.append("\n");
+        }
 	}
+	
+	public void runtime() throws IOException {
+		File location = new File(FileLocation);
+		command2 = "java code_" + timestamp + ".java" + " < input_" + timestamp + ".txt";
+		
+		ProcessBuilder builder = new ProcessBuilder();
+        	builder.directory(location);
 
-	private void logProcessOutput(Process process, String phase) throws IOException {
-		try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			 BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()))) {
-
-			String line;
-			while ((line = inputReader.readLine()) != null) {
-				logInfo(phase + " output: " + line);
-				output.append(line).append("\n");
-			}
-			boolean hasError = false;
-			while ((line = errorReader.readLine()) != null) {
-				hasError = true;
-				logError(phase + " error: " + line);
-				output.append(line).append("\n");
-			}
-			if (!hasError && "Compilation".equals(phase)) {
-				output.append("Successfully Compiled\n");
-			}
+        	if(isWindows) {
+				builder.command("cmd.exe", "/c", command2);
+        	}else {
+				builder.command("sh", "-c", command2);
+        	}
+		process2 = null;
+		try
+		{process2 = builder.start();}
+		catch (IOException e)
+		{e.printStackTrace();}
+	
+		final BufferedReader is3 = new BufferedReader(new InputStreamReader(process2.getInputStream()));
+		String line2;
+		output.append("Output : ");
+		output.append("\n");
+		while ((line2 = is3.readLine()) != null) {
+			System.out.println(date + " :r : " + line2);
+			output.append(line2);
+			output.append("\n");
 		}
-	}
-
-	private void logInfo(String message) {
-		logger.info("[{}] [{}] - {}", new Date(), Thread.currentThread().getName(), message);
-	}
-
-	private void logError(String message) {
-		logger.error("[{}] [{}] - {}", new Date(), Thread.currentThread().getName(), message);
-	}
-
-	private void logError(String message, Throwable throwable) {
-		logger.error("[{}] [{}] - {}", new Date(), Thread.currentThread().getName(), message, throwable);
+		final BufferedReader is4 = new BufferedReader(new InputStreamReader(process2.getErrorStream()));
+		while ((line2 = is4.readLine()) != null) {
+			System.out.println(date + line2);
+			output.append(line2);
+			output.append("\n");
+		}
 	}
 }

@@ -15,12 +15,16 @@ public class Creds {
 	@JsonProperty("EMAIL")
 	String EMAIL;
 
+	@JsonProperty("AI_API")
+	String AI_API;
+
 	public Creds(){}
-	public Creds(String ACCESS_KEY, String SECRET_KEY, String PUBLIC_IP, String EMAIL) {
+	public Creds(String ACCESS_KEY, String SECRET_KEY, String PUBLIC_IP, String EMAIL, String AI_API) {
 		this.ACCESS_KEY = ACCESS_KEY;
 		this.SECRET_KEY = SECRET_KEY;
 		this.PUBLIC_IP = PUBLIC_IP;
 		this.EMAIL = EMAIL;
+		this.AI_API = AI_API;
 	}
 
 	@JsonProperty("ACCESS_KEY")
@@ -57,5 +61,14 @@ public class Creds {
 
 	public void setEMAIL(String EMAIL) {
 		this.EMAIL = EMAIL;
+	}
+
+	@JsonProperty("AI_API")
+	public String getAI_API() {
+		return AI_API;
+	}
+
+	public void setAI_API(String AI_API) {
+		this.AI_API = AI_API;
 	}
 }

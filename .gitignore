@@ -1,0 +1,8 @@
+# IntelliJ IDEA project files
+.idea/
+
+# Maven/Gradle build output
+target/
+
+# Configuration files
+application.properties
