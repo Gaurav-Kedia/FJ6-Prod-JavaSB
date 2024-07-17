@@ -2,6 +2,7 @@ package com.foreverjava.Reader;
 
 import com.foreverjava.Util.Creds;
 import com.foreverjava.Util.FJCryptoUtil;
+import com.foreverjava.Util.FileConfigUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.xml.stream.XMLInputFactory;
@@ -16,9 +17,10 @@ public class XmlReaderService {
     @Autowired
     private FJCryptoUtil encryptionUtils;
 
-    public Creds readCredsFromXml(String filePath) {
+    public Creds readCredsFromXml(FileConfigUtil fileConfigUtil) {
         Creds creds = null;
         String content = null;
+        String filePath = fileConfigUtil.getCredLocation();
 
         XMLInputFactory factory = XMLInputFactory.newInstance();
 
@@ -48,6 +50,8 @@ public class XmlReaderService {
                             creds.setPUBLIC_IP(encryptionUtils.decrypt(content));
                         } else if ("EMAIL".equals(reader.getLocalName())) {
                             creds.setEMAIL(encryptionUtils.decrypt(content));
+                        } else if ("AI_API".equals(reader.getLocalName())) {
+                            creds.setAI_API(encryptionUtils.decrypt(content));
                         }
                         break;
                 }

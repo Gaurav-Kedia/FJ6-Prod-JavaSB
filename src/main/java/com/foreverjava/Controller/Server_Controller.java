@@ -30,13 +30,10 @@ import java.util.concurrent.Executors;
  */
 @CrossOrigin
 @RestController
-public class Server_controller {
+public class Server_Controller {
 
 	@Autowired
 	private XmlReaderService xmlReaderService;
-
-	@Autowired
-	private FJCryptoUtil encryptionUtils;
 
 	@Autowired
 	private JavaReaderService javaReaderService;
@@ -44,13 +41,13 @@ public class Server_controller {
 	private final FileConfigUtil fileConfig;
 
 	@Autowired
-	public Server_controller(FileConfigUtil fileConfig) {
+	public Server_Controller(FileConfigUtil fileConfig) {
 		this.fileConfig = fileConfig;
 	}
 
 	@GetMapping("/read-xml")
-	public Creds readXml(@RequestParam String filePath){
-		return xmlReaderService.readCredsFromXml(filePath);
+	public Creds readXml(){
+		return xmlReaderService.readCredsFromXml(fileConfig);
 	}
 
 	@GetMapping("/list-java-files")

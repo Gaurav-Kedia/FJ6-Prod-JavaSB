@@ -18,15 +18,19 @@ public class FileWriterClass {
 	StringBuilder output = new StringBuilder("");
 	java.util.Date date = new java.util.Date();
 	private String FileLocation;
+	private String Credlocation;
 
 	public FileWriterClass(String val, String in, String ts, FileConfigUtil fc) {
 		this.code=val;
 		this.input=in;
 		this.timestamp=ts;
 		FileLocation = fc.getFileLocation();
+		Credlocation = fc.getCredLocation();
 	}
 	
 	public StringBuilder write() throws IOException {
+		System.out.println("File location : " + FileLocation);
+		System.out.println("Cred location : " + Credlocation);
 		make_java_file();
 		make_input_file();
 		compiler();
