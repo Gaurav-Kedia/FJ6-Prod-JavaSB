@@ -38,6 +38,9 @@ public class Server_Controller {
 	@Autowired
 	private JavaReaderService javaReaderService;
 
+	@Autowired
+    	private GeminiService geminiService;
+
 	private final FileConfigUtil fileConfig;
 
 	@Autowired
@@ -97,4 +100,12 @@ public class Server_Controller {
 		}
 		return new StringBuilder(result);
 	}
+
+    @GetMapping("/FJ-AI")
+    public String getResponse(String prompt) throws IOException {
+        String suffix = "Write only the Java code for the following: ";
+        Creds creds = xmlReaderService.readCredsFromXml(fileConfig);
+        String Credlocation = creds.getAI_API();
+        return geminiService.callApi(suffix + prompt, Credlocation);
+    }
 }
