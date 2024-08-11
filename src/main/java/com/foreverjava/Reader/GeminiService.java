@@ -1,14 +1,7 @@
 package com.foreverjava.Reader;
 
-import com.foreverjava.Util.HttpUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import com.foreverjava.Util.HttpUtilForGeminiAIResponse;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -37,6 +30,6 @@ public class GeminiService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to construct JSON request body", e);
         }
-        return HttpUtils.sendPostRequest(apiUrl, requestBody);
+        return HttpUtilForGeminiAIResponse.sendPostRequest(apiUrl, requestBody);
     }
 }

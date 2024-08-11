@@ -8,7 +8,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class HttpUtils {
+public class HttpUtilForGeminiAIResponse {
 
     public static String sendPostRequest(String requestUrl, String payload) throws IOException {
         URL url = new URL(requestUrl);

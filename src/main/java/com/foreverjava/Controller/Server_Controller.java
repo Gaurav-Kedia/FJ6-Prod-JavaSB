@@ -25,6 +25,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.google.cloud.vertexai.VertexAI;
+import com.google.cloud.vertexai.api.GenerateContentResponse;
+import com.google.cloud.vertexai.generativeai.GenerativeModel;
+import com.google.cloud.vertexai.generativeai.ResponseHandler;
+import java.io.IOException;
+
 /**
  * @author GAURAV
  *
@@ -106,7 +112,28 @@ public class Server_Controller {
     public String getResponse(String prompt) throws IOException {
         String suffix = "Write only the Java code for the following: ";
         Creds creds = xmlReaderService.readCredsFromXml(fileConfig);
-        String Credlocation = creds.getAI_API();
-        return geminiService.callApi(suffix + prompt, Credlocation);
+        String ai_api = creds.getAI_API();
+        return geminiService.callApi(suffix + prompt, ai_api);
     }
+
+	@GetMapping("Vertex-AI")
+	public String getResponsefromVertexAI(String prompt) throws IOException{
+		String suffix = "Write only the Java code for the following: ";
+		String projectId = "gen-lang-client-0300339255";
+		String location = "us-central1";
+		String modelName = "gemini-1.5-flash-001";
+
+//		String output = textInput(projectId, location, modelName, textPrompt);
+//		System.out.println(output);
+
+		try (VertexAI vertexAI = new VertexAI(projectId, location)) {
+			GenerativeModel model = new GenerativeModel(modelName, vertexAI);
+
+			GenerateContentResponse response = model.generateContent(suffix + prompt);
+			String output = ResponseHandler.getText(response);
+			output = output.replace("```java", "").replace("```", "");
+			System.out.println(output);
+			return output;
+		}
+	}
 }
