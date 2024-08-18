@@ -11,7 +11,7 @@ import java.io.IOException;
 @Service
 public class GeminiService {
 
-    private final String API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=%s";
+    private final String API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=%s";
 
     public String callApi(String prompt, String geminiKey) throws IOException {
         String apiUrl = String.format(API_URL_TEMPLATE, geminiKey);

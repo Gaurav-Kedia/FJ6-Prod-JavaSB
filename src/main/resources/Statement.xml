@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<queries>
+    <query id="selectUserIPv6">
+        <![CDATA[
+        SELECT ipv6_id, ipv6_value, role_id FROM user_ipv6 WHERE ipv6_value = ?
+        ]]>
+    </query>
+
+    <query id="insertUserIPv6">
+        <![CDATA[
+        INSERT INTO user_ipv6 (ipv6_value, role_id) VALUES (?, ?)
+        ]]>
+    </query>
+
+    <query id="countRequestsForToday">
+        <![CDATA[
+        SELECT COUNT(*) FROM api_request_logs
+        WHERE ipv6_id = ? AND DATE(request_time) = ?
+        ]]>
+    </query>
+
+    <query id="insertApiRequestLog">
+        <![CDATA[
+        INSERT INTO api_request_logs (ipv6_id, request_time) VALUES (?, ?)
+        ]]>
+    </query>
+</queries>

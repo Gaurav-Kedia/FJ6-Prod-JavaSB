@@ -6,12 +6,14 @@ package com.foreverjava.Controller;
 
 import java.io.IOException;
 
-import com.foreverjava.Util.Creds;
-import com.foreverjava.Util.FJCryptoUtil;
-import com.foreverjava.Util.FileConfigUtil;
+import com.foreverjava.Dto.ApiResponseDTO;
+import com.foreverjava.Util.*;
 import com.foreverjava.Reader.JavaReaderService;
 import com.foreverjava.Reader.XmlReaderService;
 import com.foreverjava.Reader.GeminiService;
+import com.foreverjava.Reader.ApiRequestService;
+import com.foreverjava.Util.Hibernate.Table1;
+import com.foreverjava.Util.Hibernate.Table1Service;
 import com.foreverjava.Writer.FileWriterClass;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,6 @@ import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
 import com.google.cloud.vertexai.generativeai.ResponseHandler;
-import java.io.IOException;
 
 /**
  * @author GAURAV
@@ -46,7 +47,10 @@ public class Server_Controller {
 	private JavaReaderService javaReaderService;
 
 	@Autowired
-    	private GeminiService geminiService;
+	private GeminiService geminiService;
+
+	@Autowired
+	private Table1Service table1Service;
 
 	private final FileConfigUtil fileConfig;
 
@@ -123,9 +127,6 @@ public class Server_Controller {
 		String location = "us-central1";
 		String modelName = "gemini-1.5-flash-001";
 
-//		String output = textInput(projectId, location, modelName, textPrompt);
-//		System.out.println(output);
-
 		try (VertexAI vertexAI = new VertexAI(projectId, location)) {
 			GenerativeModel model = new GenerativeModel(modelName, vertexAI);
 
@@ -135,5 +136,19 @@ public class Server_Controller {
 			System.out.println(output);
 			return output;
 		}
+	}
+
+	@GetMapping("/all")
+	public List<Table1> getAllRecords() {
+		return table1Service.getAllRecords();
+	}
+
+	@Autowired
+	private ApiRequestService apiRequestService;
+
+	@PostMapping("/request-validate-generate-ai")
+	public ApiResponseDTO handleRequest(@RequestParam("ipv6") String ipv6Value, @RequestParam("prompt") String prompt) throws IOException {
+		System.out.println("Received API request for IPv6: " + ipv6Value);
+		return apiRequestService.handleApiRequest(ipv6Value, prompt);
 	}
 }

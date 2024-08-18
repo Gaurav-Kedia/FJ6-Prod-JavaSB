@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FJ-java" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.foreverjava.AppLauncher" />
+    <module name="FJ6-Prod-JavaSB" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
