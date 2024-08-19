@@ -21,7 +21,7 @@ public class XmlQueryLoader {
     public XmlQueryLoader() {
         try {
             // Load the XML file from the resources folder
-            ClassPathResource resource = new ClassPathResource("Statement.XML");
+            ClassPathResource resource = new ClassPathResource("Statement.xml");
             InputStream inputStream = resource.getInputStream();
 
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
