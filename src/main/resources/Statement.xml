@@ -1,24 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <queries>
+    <!-- Fetch user by IPv6 value -->
     <query id="selectUserIPv6">
         <![CDATA[
-        SELECT ipv6_id, ipv6_value, role_id FROM user_ipv6 WHERE ipv6_value = ?
+        SELECT u.ipv6_id, u.ipv6_value, u.role_id FROM user_ipv6 u WHERE u.ipv6_value = ?
         ]]>
     </query>
 
+    <!-- Insert a new user IPv6 -->
     <query id="insertUserIPv6">
         <![CDATA[
         INSERT INTO user_ipv6 (ipv6_value, role_id) VALUES (?, ?)
         ]]>
     </query>
 
-    <query id="countRequestsForToday">
+    <!-- Fetch role ID by role name -->
+    <query id="selectRoleByName">
         <![CDATA[
-        SELECT COUNT(*) FROM api_request_logs
-        WHERE ipv6_id = ? AND DATE(request_time) = ?
+        SELECT role_id FROM roles WHERE role_name = ?
         ]]>
     </query>
 
+    <!-- Fetch request limit by role ID -->
+    <query id="selectRoleLimitById">
+        <![CDATA[
+        SELECT request_limit FROM roles WHERE role_id = ?
+        ]]>
+    </query>
+
+    <!-- Count the number of requests for today -->
+    <query id="countRequestsForToday">
+        <![CDATA[
+        SELECT COUNT(*) FROM api_request_logs WHERE ipv6_id = ? AND DATE(request_time) = ?
+        ]]>
+    </query>
+
+    <!-- Insert a new API request log -->
     <query id="insertApiRequestLog">
         <![CDATA[
         INSERT INTO api_request_logs (ipv6_id, request_time) VALUES (?, ?)
