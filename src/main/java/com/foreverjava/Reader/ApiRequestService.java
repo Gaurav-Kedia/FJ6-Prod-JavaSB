@@ -98,7 +98,7 @@ public class ApiRequestService {
     }
 
     private String getResponsefromVertexAI(String prompt) {
-        String suffix = "Write only the Java code for the following: ";
+        String suffix = "Write only the Java code with necessary imports for the following: ";
         String projectId = "gen-lang-client-0300339255";
         String location = "us-central1";
         String modelName = "gemini-1.5-flash-001";
