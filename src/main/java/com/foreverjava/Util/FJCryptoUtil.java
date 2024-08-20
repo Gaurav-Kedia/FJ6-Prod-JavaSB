@@ -14,8 +14,8 @@ public class FJCryptoUtil {
     @Value("${encryption.key}")
     private String key;
 
-    private static String ALGORITHM = "AES";
-    private static byte[] KEY;
+    private String ALGORITHM = "AES";
+    private byte[] KEY;
 
     @PostConstruct
     public void init() {
