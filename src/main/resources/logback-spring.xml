@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <springProperty scope="context" name="s3Enabled" source="logging.s3.enabled" defaultValue="false"/>
+    <springProperty scope="context" name="s3Bucket" source="logging.s3.bucket"/>
+    <springProperty scope="context" name="s3Key" source="logging.s3.key" defaultValue="logs/application.log"/>
+    <springProperty scope="context" name="s3Region" source="logging.s3.region"/>
+    <springProperty scope="context" name="s3FlushThreshold" source="logging.s3.flush-threshold" defaultValue="10"/>
+    <springProperty scope="context" name="s3MaxStartupBytes" source="logging.s3.max-startup-bytes" defaultValue="1048576"/>
+    <springProperty scope="context" name="s3SmallObjectThreshold" source="logging.s3.small-object-threshold-bytes" defaultValue="5242880"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="S3" class="com.foreverjava.logging.S3LogAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </layout>
+        <enabled>${s3Enabled}</enabled>
+        <bucketName>${s3Bucket}</bucketName>
+        <key>${s3Key}</key>
+        <region>${s3Region}</region>
+        <flushThreshold>${s3FlushThreshold}</flushThreshold>
+        <maxStartupDownloadBytes>${s3MaxStartupBytes}</maxStartupDownloadBytes>
+        <smallObjectDownloadThresholdBytes>${s3SmallObjectThreshold}</smallObjectDownloadThresholdBytes>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="S3"/>
+    </root>
+</configuration>
