@@ -1,8 +1,10 @@
 package com.foreverjava.Dto;
 
+import com.foreverjava.execution.SupportedJavaVersion;
+
 public class CodeExecutionResponse {
 
-    private final String javaVersion;
+    private final SupportedJavaVersion javaVersion;
     private final boolean compileSuccessful;
     private final long compileTimeMillis;
     private final String compileStdout;
@@ -18,7 +20,7 @@ public class CodeExecutionResponse {
     private final boolean errorTruncated;
 
     public CodeExecutionResponse(
-            String javaVersion,
+            SupportedJavaVersion javaVersion,
             boolean compileSuccessful,
             long compileTimeMillis,
             String compileStdout,
@@ -48,7 +50,7 @@ public class CodeExecutionResponse {
         this.errorTruncated = errorTruncated;
     }
 
-    public String getJavaVersion() {
+    public SupportedJavaVersion getJavaVersion() {
         return javaVersion;
     }
 

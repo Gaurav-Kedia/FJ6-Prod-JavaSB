@@ -3,6 +3,7 @@ package com.foreverjava.service;
 import com.foreverjava.Dto.CodeExecutionRequest;
 import com.foreverjava.Dto.CodeExecutionResponse;
 import com.foreverjava.config.ExecutionSandboxProperties;
+import com.foreverjava.execution.SupportedJavaVersion;
 import com.foreverjava.exception.CodeExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,13 +57,7 @@ public class CodeExecutionService {
     }
 
     private CodeExecutionResponse executeInternal(CodeExecutionRequest request) {
-        String trimmedVersion = request.getJavaVersion() == null ? "" : request.getJavaVersion().trim();
-        String javaVersion = trimmedVersion.isEmpty() && properties.getDefaultVersion() != null
-                ? properties.getDefaultVersion().trim()
-                : trimmedVersion;
-        if (javaVersion == null || javaVersion.isEmpty()) {
-            javaVersion = String.valueOf(Runtime.version().feature());
-        }
+        SupportedJavaVersion javaVersion = determineRequestedVersion(request);
 
         Path javaHome = resolveJavaHome(javaVersion);
         Path workingDirectory = createWorkingDirectory();
@@ -130,8 +125,8 @@ public class CodeExecutionService {
         }
     }
 
-    private Path resolveJavaHome(String version) {
-        Map<String, Path> configured = properties.getJdkPaths();
+    private Path resolveJavaHome(SupportedJavaVersion version) {
+        Map<SupportedJavaVersion, Path> configured = properties.getResolvedJdkPaths();
         Path path = configured.get(version);
         if (path != null && path.toString().isBlank()) {
             path = null;
@@ -139,16 +134,20 @@ public class CodeExecutionService {
         if (path != null && Files.exists(path)) {
             return path;
         }
-        if (String.valueOf(Runtime.version().feature()).equals(version)) {
+        int runtimeFeature = Runtime.version().feature();
+        boolean runtimeMatches = SupportedJavaVersion.fromFeature(runtimeFeature)
+                .map(version::equals)
+                .orElse(false);
+        if (runtimeMatches) {
             return Paths.get(System.getProperty("java.home"));
         }
         if (configured.containsKey(version) && path == null) {
             return Paths.get(System.getProperty("java.home"));
         }
         if (configured.containsKey(version)) {
-            throw new CodeExecutionException(HttpStatus.BAD_REQUEST, "Configured Java home does not exist for version " + version);
+            throw new CodeExecutionException(HttpStatus.BAD_REQUEST, "Configured Java home does not exist for version " + version.getFeatureVersion());
         }
-        String envKey = "JDK_" + version + "_HOME";
+        String envKey = version.getEnvironmentVariableName();
         String envValue = System.getenv(envKey);
         if (envValue != null && !envValue.isBlank()) {
             Path envPath = Paths.get(envValue);
@@ -156,10 +155,19 @@ public class CodeExecutionService {
                 return envPath;
             }
         }
-        if ("current".equalsIgnoreCase(version)) {
-            return Paths.get(System.getProperty("java.home"));
+        throw new CodeExecutionException(HttpStatus.BAD_REQUEST, "Unsupported or unavailable Java version: " + version.getFeatureVersion());
+    }
+
+    private SupportedJavaVersion determineRequestedVersion(CodeExecutionRequest request) {
+        SupportedJavaVersion fromRequest = request.getJavaVersion();
+        if (fromRequest != null) {
+            return fromRequest;
         }
-        throw new CodeExecutionException(HttpStatus.BAD_REQUEST, "Unsupported or unavailable Java version: " + version);
+        return properties.getDefaultJavaVersion()
+                .orElseGet(() -> SupportedJavaVersion.fromFeature(Runtime.version().feature())
+                        .orElseThrow(() -> new CodeExecutionException(
+                                HttpStatus.INTERNAL_SERVER_ERROR,
+                                "No default Java version configured and runtime version is unsupported")));
     }
 
     private Path createWorkingDirectory() {

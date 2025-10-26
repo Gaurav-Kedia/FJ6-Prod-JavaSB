@@ -107,7 +107,7 @@ public class Server_Controller {
         // Endpoint to execute Java code provided in the request body
         @PostMapping("/java")
         public CompletableFuture<ResponseEntity<CodeExecutionResponse>> codeExecutor(@Valid @RequestBody CodeExecutionRequest request) {
-                LOGGER.info("Request received to execute Java code using JDK version {}", request.getJavaVersion());
+                LOGGER.info("Request received to execute Java code using {}", request.getJavaVersion().getDisplayName());
                 return codeExecutionService.executeAsync(request)
                                 .thenApply(ResponseEntity::ok);
         }

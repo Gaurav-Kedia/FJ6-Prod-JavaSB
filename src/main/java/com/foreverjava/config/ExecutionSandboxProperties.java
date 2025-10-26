@@ -1,5 +1,6 @@
 package com.foreverjava.config;
 
+import com.foreverjava.execution.SupportedJavaVersion;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -8,8 +9,10 @@ import org.springframework.validation.annotation.Validated;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Validated
 @ConfigurationProperties(prefix = "sandbox")
@@ -111,12 +114,28 @@ public class ExecutionSandboxProperties {
         return jdkPaths;
     }
 
+    public Map<SupportedJavaVersion, Path> getResolvedJdkPaths() {
+        Map<SupportedJavaVersion, Path> resolved = new EnumMap<>(SupportedJavaVersion.class);
+        jdkPaths.forEach((key, value) -> {
+            SupportedJavaVersion version = SupportedJavaVersion.fromValue(key);
+            resolved.put(version, value);
+        });
+        return resolved;
+    }
+
     public void setJdkPaths(Map<String, Path> jdkPaths) {
         this.jdkPaths = jdkPaths;
     }
 
     public String getDefaultVersion() {
         return defaultVersion;
+    }
+
+    public Optional<SupportedJavaVersion> getDefaultJavaVersion() {
+        if (defaultVersion == null || defaultVersion.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.of(SupportedJavaVersion.fromValue(defaultVersion));
     }
 
     public void setDefaultVersion(String defaultVersion) {

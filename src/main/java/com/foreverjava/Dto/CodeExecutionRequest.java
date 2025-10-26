@@ -1,6 +1,8 @@
 package com.foreverjava.Dto;
 
+import com.foreverjava.execution.SupportedJavaVersion;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class CodeExecutionRequest {
 
@@ -9,8 +11,8 @@ public class CodeExecutionRequest {
 
     private String input = "";
 
-    @NotBlank(message = "Java version must not be blank")
-    private String javaVersion;
+    @NotNull(message = "Java version must not be null")
+    private SupportedJavaVersion javaVersion;
 
     public String getCode() {
         return code;
@@ -28,11 +30,11 @@ public class CodeExecutionRequest {
         this.input = input;
     }
 
-    public String getJavaVersion() {
+    public SupportedJavaVersion getJavaVersion() {
         return javaVersion;
     }
 
-    public void setJavaVersion(String javaVersion) {
+    public void setJavaVersion(SupportedJavaVersion javaVersion) {
         this.javaVersion = javaVersion;
     }
 }
