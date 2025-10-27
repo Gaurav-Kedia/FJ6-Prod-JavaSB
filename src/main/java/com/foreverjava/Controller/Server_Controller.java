@@ -3,6 +3,7 @@ package com.foreverjava.Controller;
 import com.foreverjava.Dto.ApiResponseDTO;
 import com.foreverjava.Dto.CodeExecutionRequest;
 import com.foreverjava.Dto.CodeExecutionResponse;
+import com.foreverjava.Dto.SupportedJavaVersionDTO;
 import com.foreverjava.Util.Creds;
 import com.foreverjava.Util.FileConfigUtil;
 import com.foreverjava.Reader.ApiRequestService;
@@ -12,6 +13,7 @@ import com.foreverjava.Reader.XmlReaderService;
 import com.foreverjava.Util.Hibernate.Table1;
 import com.foreverjava.Util.Hibernate.Table1Service;
 import com.foreverjava.service.CodeExecutionService;
+import com.foreverjava.execution.SupportedJavaVersion;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
 import com.google.cloud.vertexai.generativeai.GenerativeModel;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -110,6 +113,16 @@ public class Server_Controller {
                 LOGGER.info("Request received to execute Java code using {}", request.getJavaVersion().getDisplayName());
                 return codeExecutionService.executeAsync(request)
                                 .thenApply(ResponseEntity::ok);
+        }
+
+        // Endpoint to return the list of JDKs that the sandbox currently supports
+        @GetMapping("/java/versions")
+        public ResponseEntity<List<SupportedJavaVersionDTO>> listSupportedJavaVersions() {
+                LOGGER.info("Request received to list supported Java versions");
+                List<SupportedJavaVersionDTO> versions = Arrays.stream(SupportedJavaVersion.values())
+                                .map(SupportedJavaVersionDTO::from)
+                                .toList();
+                return ResponseEntity.ok(versions);
         }
 
         // Endpoint to get a response from an AI model using GeminiService

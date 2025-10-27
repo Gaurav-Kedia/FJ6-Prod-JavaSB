@@ -57,6 +57,7 @@ flowchart TD
 ## Supported Java versions
 
 The backend only accepts the versions listed below. Incoming requests containing other values are rejected before any code runs.
+Call `GET /java/versions` to retrieve this curated list at runtime and populate dropdowns in the UI without hardcoding it.
 
 | Enum constant | Request payload accepted values | Environment variable for JDK home |
 | --- | --- | --- |
@@ -73,6 +74,7 @@ The backend only accepts the versions listed below. Incoming requests containing
 | --- | --- |
 | [`Server_Controller`](src/main/java/com/foreverjava/Controller/Server_Controller.java) | Receives HTTP requests, validates payloads, and invokes the async execution service. |
 | [`CodeExecutionRequest`](src/main/java/com/foreverjava/Dto/CodeExecutionRequest.java) | DTO carrying user code, stdin, and the strictly validated `SupportedJavaVersion`. |
+| [`SupportedJavaVersionDTO`](src/main/java/com/foreverjava/Dto/SupportedJavaVersionDTO.java) | Response DTO returned by `/java/versions` so clients can build JDK pickers dynamically. |
 | [`SupportedJavaVersion`](src/main/java/com/foreverjava/execution/SupportedJavaVersion.java) | Enum + deserializer that whitelists the JDKs we allow to run inside the sandbox. |
 | [`CodeExecutionService`](src/main/java/com/foreverjava/service/CodeExecutionService.java) | Orchestrates sandbox creation, compilation, execution, metrics gathering, and cleanup. |
 | [`CodeExecutionResponse`](src/main/java/com/foreverjava/Dto/CodeExecutionResponse.java) | Immutable response DTO exposing compile/runtime stats and the chosen JDK. |
@@ -102,6 +104,7 @@ The backend only accepts the versions listed below. Incoming requests containing
     │   │   ├── CodeExecutionRequest.java
     │   │   ├── CodeExecutionResponse.java
     │   │   ├── RoleDTO.java
+    │   │   ├── SupportedJavaVersionDTO.java
     │   │   └── UserIPv6DTO.java
     │   ├── Reader/
     │   │   ├── ApiRequestService.java
