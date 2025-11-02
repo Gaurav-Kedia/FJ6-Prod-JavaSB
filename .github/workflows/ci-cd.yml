@@ -1,4 +1,6 @@
-name: CI / CD
+name: IDEA Production CI/CD
+
+run-name: "IDEA pipeline • ${{ github.event_name }} @ ${{ github.ref_name }}"
 
 on:
   pull_request:
@@ -21,9 +23,13 @@ permissions:
 env:
   JAVA_VERSION: '17'
 
+concurrency:
+  group: idea-production-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
   build:
-    name: Build & Test
+    name: IDEA Build & Test Stage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -61,12 +67,12 @@ jobs:
           path: target/*.jar
 
   deploy:
-    name: Deploy to EC2
+    name: IDEA Production Deployment Stage
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name != 'pull_request'
     environment:
-      name: production
+      name: idea-production
     steps:
       - name: Download packaged artifact
         uses: actions/download-artifact@v4

@@ -89,7 +89,7 @@ Call `GET /java/versions` to retrieve this curated list at runtime and populate 
 ├── LICENSE
 ├── README.md
 ├── Scripts/
-│   └── Script.sh
+│   └── remote-deploy.sh
 ├── mvnw*
 ├── pom.xml
 └── src/main/
@@ -137,17 +137,19 @@ Call `GET /java/versions` to retrieve this curated list at runtime and populate 
 
 ## GitHub Actions CI/CD pipeline
 
-The repository now ships with a single [GitHub Actions workflow](.github/workflows/ci-cd.yml) that covers pull-request validation, production deployments, and manual rollbacks.
+The repository now ships with a single [GitHub Actions workflow](.github/workflows/ci-cd.yml) modelled after the IDEA production pipeline. It covers pull-request validation, automated deployments to the IDEA production environment, and manual rollbacks when you need to redeploy an older build.
 
 ### Trigger matrix
 
 | Trigger | Jobs that run | Purpose |
 | --- | --- | --- |
 | `pull_request` → `master` | `build` | Compile, run unit/integration tests, and fail fast before anything reaches the default branch. |
-| `push` → `master` | `build` ➜ `deploy` | Re-run the full test suite, package the application, and ship the artefact to the EC2 host automatically after an approved merge. |
-| `workflow_dispatch` | `build` ➜ `deploy` | Manually redeploy any git reference (branch, tag, or commit SHA) to support instant rollbacks or hot-fixes. |
+| `push` → `master` | `build` ➜ `deploy` | Re-run the full test suite, package the application, and ship the artefact to the IDEA production EC2 host automatically after an approved merge. |
+| `workflow_dispatch` | `build` ➜ `deploy` | Manually redeploy any git reference (branch, tag, or commit SHA) to support instant rollbacks or hot-fixes using the same pipeline that production merges trigger. |
 
 The build job uses the Maven wrapper to ensure a consistent toolchain. The resulting JAR is uploaded as a workflow artefact and later consumed by the deploy job so the exact bits that passed CI are the ones promoted to production.
+
+> ⛳️ The workflow defines a concurrency group (`idea-production-${{ github.ref_name }}`) so only one deployment for a given branch runs at a time—matching the behaviour of the IDEA production rollout.
 
 ### Deployment flow
 
@@ -186,4 +188,4 @@ Every deployment replaces `current/application.jar` and writes the version strin
 
 ### Branch protection and approvals
 
-The [`CODEOWNERS`](.github/CODEOWNERS) file assigns every path to `@Gaurav-Kedia`. Once you enable branch protection for `master` with “Require a pull request before merging” and “Require review from Code Owners”, GitHub will block direct pushes and enforce owner approval on every PR. Pair this with “Include administrators” to guarantee no privileged account bypasses the workflow.
+The [`CODEOWNERS`](.github/CODEOWNERS) file assigns every path to `@Gaurav-Kedia`. Once you enable branch protection for `master` with “Require a pull request before merging” and “Require review from Code Owners”, GitHub will block direct pushes and enforce owner approval on every PR. Pair this with “Include administrators” to guarantee no privileged account bypasses the workflow. Tie your branch protection to the `idea-production` environment if you want GitHub to request an extra deployment approval before the production stage runs.
