@@ -36,7 +36,8 @@ public class CodeExecutionService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CodeExecutionService.class);
     private static final boolean IS_WINDOWS = System.getProperty("os.name").toLowerCase().contains("win");
-    private static final Pattern CLASS_PATTERN = Pattern.compile("public\\s+class\\s+(\\w+)");
+    private static final Pattern PUBLIC_TYPE_PATTERN = Pattern.compile("public\\s+(?:class|interface|enum|record|@interface)\\s+(\\w+)");
+    private static final Pattern TYPE_PATTERN = Pattern.compile("(?:class|interface|enum|record|@interface)\\s+(\\w+)");
     private static final Pattern PACKAGE_PATTERN = Pattern.compile("package\\s+([\\w\\.]+)\\s*;");
 
     private final ExecutionSandboxProperties properties;
@@ -179,8 +180,7 @@ public class CodeExecutionService {
     }
 
     private SourceLayout prepareSourceFiles(String code, Path workingDirectory) throws IOException {
-        Matcher classMatcher = CLASS_PATTERN.matcher(code);
-        String className = classMatcher.find() ? classMatcher.group(1) : properties.getFallbackClassName();
+        String className = resolvePrimaryTypeName(code);
         Matcher packageMatcher = PACKAGE_PATTERN.matcher(code);
         String packageName = packageMatcher.find() ? packageMatcher.group(1) : null;
 
@@ -194,6 +194,18 @@ public class CodeExecutionService {
         Files.writeString(sourceFile, code, StandardCharsets.UTF_8);
         String qualifiedClassName = packageName != null ? packageName + "." + className : className;
         return new SourceLayout(sourceFile, qualifiedClassName);
+    }
+
+    private String resolvePrimaryTypeName(String code) {
+        Matcher publicTypeMatcher = PUBLIC_TYPE_PATTERN.matcher(code);
+        if (publicTypeMatcher.find()) {
+            return publicTypeMatcher.group(1);
+        }
+        Matcher anyTypeMatcher = TYPE_PATTERN.matcher(code);
+        if (anyTypeMatcher.find()) {
+            return anyTypeMatcher.group(1);
+        }
+        return properties.getFallbackClassName();
     }
 
     private List<String> buildCompileCommand(Path javaHome, Path sourceFile) {

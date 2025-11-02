@@ -14,8 +14,8 @@ Java Spring Boot application for ForeverJava in the FJ6 EC2 production environme
    The service reads limits (timeouts, memory caps, queue size) and JDK installation hints from `sandbox.*` properties. Property values can point to explicit install directories, environment variables like `JDK_17_HOME`, or fall back to the JVM that launched the app when versions line up.
 5. **Per-request workspace is provisioned**  
    `CodeExecutionService.createWorkingDirectory` creates a unique folder under the configured sandbox base directory (defaults to `${java.io.tmpdir}/code-exec`). Each run gets isolated `stdout`, `stderr`, and metrics files which are deleted at the end of the request to avoid leaking user data.
-6. **Source code is materialised safely**  
-   `prepareSourceFiles` extracts the public class and package name (if present) before writing exactly one `.java` file into the sandbox. This keeps the compiler from traversing arbitrary directories.
+6. **Source code is materialised safely**
+   `prepareSourceFiles` extracts the public top-level type (class, interface, enum, record, or annotation) and package name (if present) before writing exactly one `.java` file into the sandbox. This keeps the compiler from traversing arbitrary directories and allows modern constructs such as records to compile correctly.
 7. **Compilation happens with explicit resource limits**  
    `buildCompileCommand` resolves the `javac` binary within the selected JDK home, then `runProcess` executes it with the configured timeout. Compiler logs are streamed into sandbox-local files so even large outputs do not overload memory.
 8. **Execution is monitored for time, memory, and output**  
@@ -51,7 +51,7 @@ flowchart TD
 | --- | --- | --- |
 | **Sandbox working folders** | `${sandbox.base-dir}/exec-*` on the server (defaults to `${java.io.tmpdir}/code-exec`) | `sandbox.base-dir` in [`application.properties`](src/main/resources/application.properties) or the `SANDBOX_BASE_DIR` environment variable |
 | **Compiler/runtime logs** | `stdout-*.log`, `stderr-*.log`, and `metrics-*.log` files inside each sandbox folder | Automatically created and removed per request |
-| **Provisioned JDK homes** | Paths supplied via `sandbox.jdk-paths.<version>` or environment variables like `JDK_17_HOME` | Either hard-code the absolute path in `application.properties` or export the environment variable before launching the app |
+| **Provisioned JDK homes** | Paths supplied via `sandbox.jdk-paths.<version>` (8, 11, 17, 21) or environment variables like `JDK_17_HOME` | Either hard-code the absolute path in `application.properties` or export the environment variable before launching the app |
 | **Default JDK selection** | Optional value read from `sandbox.default-version` | Provide `SANDBOX_DEFAULT_VERSION` (e.g. `JAVA_17` or `17`) to pick the version used when clients omit one |
 
 ## Supported Java versions
