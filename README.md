@@ -134,3 +134,56 @@ Call `GET /java/versions` to retrieve this curated list at runtime and populate 
 ```
 
 > **Tip:** The production deployment should mount any provisioned JDK installations on the host and expose them through the environment variables listed above. That keeps container images slim while still allowing multiple Java releases to run in parallel sandboxes.
+
+## GitHub Actions CI/CD pipeline
+
+The repository now ships with a single [GitHub Actions workflow](.github/workflows/ci-cd.yml) that covers pull-request validation, production deployments, and manual rollbacks.
+
+### Trigger matrix
+
+| Trigger | Jobs that run | Purpose |
+| --- | --- | --- |
+| `pull_request` → `master` | `build` | Compile, run unit/integration tests, and fail fast before anything reaches the default branch. |
+| `push` → `master` | `build` ➜ `deploy` | Re-run the full test suite, package the application, and ship the artefact to the EC2 host automatically after an approved merge. |
+| `workflow_dispatch` | `build` ➜ `deploy` | Manually redeploy any git reference (branch, tag, or commit SHA) to support instant rollbacks or hot-fixes. |
+
+The build job uses the Maven wrapper to ensure a consistent toolchain. The resulting JAR is uploaded as a workflow artefact and later consumed by the deploy job so the exact bits that passed CI are the ones promoted to production.
+
+### Deployment flow
+
+1. The deploy job downloads the previously built JAR and determines a release identifier (commit SHA by default, or the manual ref provided via the workflow dispatch form).
+2. `scp` uploads the artefact and the [`Scripts/remote-deploy.sh`](Scripts/remote-deploy.sh) helper to the EC2 instance.
+3. The helper script stages the release under `<DEPLOY_DIR>/releases/<release>/application.jar`, updates the `<DEPLOY_DIR>/current` symlink, restarts a systemd service when configured, or relaunches a standalone JVM as a fallback.
+4. The current version is recorded in `<DEPLOY_DIR>/current/VERSION`, making audits and rollbacks trivial.
+
+### Required GitHub secrets
+
+Configure the following repository secrets so the workflow can connect to your EC2 host safely:
+
+| Secret | Description |
+| --- | --- |
+| `EC2_HOST` | Public DNS name or IP of the target EC2 instance. |
+| `EC2_USER` | SSH username (e.g. `ubuntu`). |
+| `EC2_SSH_KEY` | Private SSH key with access to the instance (PEM contents). |
+| `EC2_DEPLOY_DIR` | Absolute path on the instance where releases should be stored (for example `/opt/fj6/app`). |
+| `EC2_SERVICE_NAME` | *(Optional)* systemd unit name to restart instead of running the JAR manually. |
+| `EC2_JAVA_OPTS` | *(Optional)* JVM flags passed to the fallback `java -jar` command. |
+| `EC2_APP_PROCESS_PATTERN` | *(Optional)* Pattern used to terminate an existing standalone JVM when no systemd unit is provided. |
+
+> The SSH key is written to an ephemeral file inside the GitHub runner and deleted after the workflow finishes, keeping your credentials off disk.
+
+### EC2 preparation checklist
+
+On the EC2 host, run the application under a dedicated directory (matching `EC2_DEPLOY_DIR`) and ensure the SSH user has permission to create subdirectories, symlinks, and restart the service or process. Install the helper script once locally if you plan to run deployments manually:
+
+```bash
+sudo mkdir -p /opt/fj6/app
+sudo chown $USER /opt/fj6/app
+scp Scripts/remote-deploy.sh user@host:/opt/fj6/app/
+```
+
+Every deployment replaces `current/application.jar` and writes the version string to `current/VERSION`. To roll back, dispatch the workflow with an older tag/commit or re-run the deploy job from the GitHub Actions UI selecting the historical run.
+
+### Branch protection and approvals
+
+The [`CODEOWNERS`](.github/CODEOWNERS) file assigns every path to `@Gaurav-Kedia`. Once you enable branch protection for `master` with “Require a pull request before merging” and “Require review from Code Owners”, GitHub will block direct pushes and enforce owner approval on every PR. Pair this with “Include administrators” to guarantee no privileged account bypasses the workflow.

@@ -1,0 +1,123 @@
+name: CI / CD
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git reference (branch, tag, or commit) to deploy'
+        required: true
+        default: master
+
+permissions:
+  contents: read
+  pull-requests: read
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.ref || github.ref }}
+
+      - name: Set up Temurin Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
+
+      - name: Cache Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: ./mvnw -B -ntp verify
+
+      - name: Package application
+        run: ./mvnw -B -ntp -DskipTests package
+
+      - name: Publish build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application-jar
+          path: target/*.jar
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name != 'pull_request'
+    environment:
+      name: production
+    steps:
+      - name: Download packaged artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: application-jar
+          path: target
+
+      - name: Determine release metadata
+        id: release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            REF="${{ github.event.inputs.ref }}"
+          else
+            REF="${GITHUB_SHA}"
+          fi
+          SANITIZED=$(echo "$REF" | tr '[:space:]/' '-')
+          echo "release=$SANITIZED" >> "$GITHUB_OUTPUT"
+
+      - name: Identify artifact
+        id: artifact
+        run: |
+          FILE=$(ls target/*.jar | head -n 1)
+          echo "path=$FILE" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$FILE")" >> "$GITHUB_OUTPUT"
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.EC2_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Upload deployment assets
+        run: |
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "${{ steps.artifact.outputs.path }}" "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/app.jar"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no Scripts/remote-deploy.sh "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/tmp/remote-deploy.sh"
+
+      - name: Deploy artifact on EC2
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no "${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}" "bash -s" <<'DEPLOY'
+          set -euo pipefail
+          RELEASE="${{ steps.release.outputs.release }}"
+          DEPLOY_DIR="${{ secrets.EC2_DEPLOY_DIR }}"
+          SERVICE_NAME="${{ secrets.EC2_SERVICE_NAME }}"
+          JAVA_OPTS="${{ secrets.EC2_JAVA_OPTS }}"
+          APP_PROCESS_PATTERN="${{ secrets.EC2_APP_PROCESS_PATTERN }}"
+          chmod +x /tmp/remote-deploy.sh
+          DEPLOY_DIR="$DEPLOY_DIR" SERVICE_NAME="$SERVICE_NAME" JAVA_OPTS="$JAVA_OPTS" APP_PROCESS_PATTERN="$APP_PROCESS_PATTERN" /tmp/remote-deploy.sh "$RELEASE" /tmp/app.jar
+          rm -f /tmp/app.jar /tmp/remote-deploy.sh
+DEPLOY
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
